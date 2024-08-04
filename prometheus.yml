@@ -1,0 +1,91 @@
+global:
+    # How frequently to scrape targets by default.
+    scrape_interval: 15s
+    # How long until a scrape request times out.
+    scrape_timeout: 10s
+    # How frequently to evaluate rules.
+    evaluation_interval: 1m
+
+rule_files:
+    - "/etc/prometheus/alert.rules"
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - alertmanager:9093
+
+scrape_configs:
+    - job_name: 'microservices'
+      static_configs:
+        - targets:
+          - 'docker-compose_edge-router_1:80'
+          - 'docker-compose_carts-db_1:27017'
+          - 'docker-compose_user-db_1:27017'
+          - 'docker-compose_front-end_1:8079'
+          - 'docker-compose_orders_1:<appropriate-port>'
+          - 'docker-compose_carts_1:<appropriate-port>'
+          - 'docker-compose_catalogue-db_1:3306'
+          - 'docker-compose_payment_1:80'
+          - 'docker-compose_catalogue_1:80'
+          - 'docker-compose_queue-master_1:<appropriate-port>'
+          - 'docker-compose_orders-db_1:27017'
+          - 'docker-compose_user_1:80'
+          - 'docker-compose_shipping_1:<appropriate-port>'
+          - 'docker-compose_rabbitmq_1:5672'
+
+    - job_name: "frontend"
+      scrape_interval: 5s
+      metrics_path: 'metrics'
+      static_configs:
+        - targets: ['edge-router']
+
+    # The job name assigned to scraped metrics by default.
+    - job_name: "catalogue"
+      # How frequently to scrape targets from this job.
+      scrape_interval: 5s
+      # List of labeled statically configured targets for this job.
+      static_configs:
+        # The targets specified by the static config.
+        - targets: ['catalogue']
+
+    - job_name: "payment"
+      scrape_interval: 5s
+      static_configs:
+        - targets: ['payment']
+
+    - job_name: "user"
+      scrape_interval: 5s
+      static_configs:
+        - targets: ['user']
+
+    - job_name: "orders"
+      scrape_interval: 5s
+      # The HTTP resource path on which to fetch metrics from targets.
+      metrics_path: 'metrics'
+      static_configs:
+        - targets: ['orders']
+
+    - job_name: "cart"
+      scrape_interval: 5s
+      metrics_path: 'metrics'
+      static_configs:
+        - targets: ['carts']
+
+    - job_name: "shipping"
+      scrape_interval: 5s
+      metrics_path: 'metrics'
+      static_configs:
+        - targets: ['shipping']
+
+    - job_name: "queue-master"
+      scrape_interval: 5s
+      metrics_path: 'prometheus'
+      static_configs:
+        - targets: ['queue-master']
+
+    - job_name: 'node-exporter'
+      scrape_interval: 5s
+      metrics_path: 'metrics'
+      static_configs:
+        - targets: ['nodeexporter:9100']
